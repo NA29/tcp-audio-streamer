@@ -15,12 +15,12 @@ public:
   // copy constructor : creating a socker from another one (ref)
   Socket(const Socket &) = delete;
 
-  // copy assignment operator : assigning a socker into an existing socket
+  // copy assignment operator (overload)
   Socket &operator=(const Socket &) = delete;
 
   // move constructor
-  Socket(Socket &&) noexcept;
+  Socket(Socket &&temp_socket) noexcept;
 
-  // move assignment operator
-  Socket &operator=(Socket &&) noexcept;
+  // move assignment operator (overload)
+  Socket &operator=(Socket &&temp_socket) noexcept;
 };
