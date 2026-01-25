@@ -1,11 +1,22 @@
 #include "socket.h"
+#include <cerrno>
+#include <cstring>
+#include <sys/socket.h>
 #include <unistd.h> // for close()
 
-Socket::Socket() { fd_ = -1; }
+Result<Socket> Socket::create() {
+  int fd = ::socket(AF_INET, SOCK_STREAM, 0);
+  if (fd == -1) {
+    return Error{ErrorCode::SocketCreateFailed, std::strerror(errno)};
+  }
+  return Socket(fd); // moved into Result
+}
 
-Socket::Socket(int fd) { fd_ = fd; }
+Socket::Socket() : fd_(-1) {}
 
-Socket::~Socket() {
+Socket::Socket(int fd) : fd_(fd) {}
+
+Socket::~Socket() noexcept {
   if (fd_ != -1) {
     ::close(fd_);
     fd_ = -1;
@@ -13,8 +24,7 @@ Socket::~Socket() {
 }
 
 // move constructor: creates new object from rvalue reference
-Socket::Socket(Socket &&temp_socket) noexcept {
-  fd_ = temp_socket.fd_;
+Socket::Socket(Socket &&temp_socket) noexcept : fd_(temp_socket.fd_) {
   temp_socket.fd_ = -1;
 }
 
