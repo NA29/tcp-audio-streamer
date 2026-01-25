@@ -9,7 +9,7 @@ Result<Socket> Socket::create() {
   if (fd == -1) {
     return Error{ErrorCode::SocketCreateFailed, std::strerror(errno)};
   }
-  return Socket(fd); // moved into Result
+  return Socket(fd); // temp Socket object -> moved into Result
 }
 
 Socket::Socket() : fd_(-1) {}
