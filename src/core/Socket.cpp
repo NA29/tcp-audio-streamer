@@ -5,7 +5,7 @@
 #include <unistd.h> // for close()
 
 Result<Socket> Socket::create() {
-  int fd = ::socket(AF_INET, SOCK_STREAM, 0);
+  int fd = ::socket(AF_INET, SOCK_STREAM, 0); // == ipv4, tcp, default protocol
   if (fd == -1) {
     return Error{ErrorCode::SocketCreateFailed, std::strerror(errno)};
   }
