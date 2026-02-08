@@ -6,6 +6,7 @@ private:
   int fd_;
 
 public:
+  int fd() const noexcept { return fd_; }
   static Result<Socket> create(); // static bc doesnt need an instance to exist
 
   Socket();

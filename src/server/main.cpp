@@ -1,5 +1,4 @@
 #include "server/server.h"
-#include <iostream>
 
 int main() {
   Server server;
