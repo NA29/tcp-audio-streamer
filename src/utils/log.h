@@ -9,6 +9,6 @@
 
 #define LOG_ERROR(fmt, ...)                                                    \
   do {                                                                         \
-    std::fprintf(stderr, "[ERROR] %s %d " : fmt "\n", __FILE__, __LINE__,      \
+    std::fprintf(stderr, "[ERROR] %s %d: " fmt "\n", __FILE__, __LINE__,       \
                  ##__VA_ARGS__);                                               \
   } while (0)
