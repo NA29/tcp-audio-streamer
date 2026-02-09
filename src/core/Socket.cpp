@@ -1,6 +1,4 @@
 #include "socket.h"
-#include <cerrno>
-#include <cstring>
 #include <sys/socket.h>
 #include <unistd.h> // for close()
 

@@ -37,7 +37,7 @@ void Server::run() {
   LOG_INFO("bound to port %d", kPort);
 
   // listen to socket
-  if (::listen(listen_socket.fd(), 5) < 0) {
+  if (::listen(listen_socket.fd(), kListenBacklog) < 0) {
     LOG_ERROR("listen() failed");
     return;
   }
@@ -65,7 +65,7 @@ void Server::run() {
 
 // handling recv()
 void handle_client(Socket &client) {
-  char buffer[4096];
+  char buffer[Server::kRecvBufferSize];
 
   while (true) {
     ssize_t n = ::recv(client.fd(), buffer, sizeof(buffer), 0);
