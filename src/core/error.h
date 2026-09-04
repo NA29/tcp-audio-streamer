@@ -27,6 +27,15 @@ enum class ErrorCode {
   ProtocolFrameTooLarge,// declared length exceeds our cap -> unrecoverable
   ProtocolUnknownType,  // recoverable: we know the length, so we can skip it cleanly
 
+  // Audio / file errors
+  FileOpenFailed,
+  WavMalformed,
+  WavUnsupported,
+
+  // timer errors
+  TimerCreateFailed,
+  TimerSetFailed,
+
   // I/O errors
   SendFailed,
   RecvFailed,

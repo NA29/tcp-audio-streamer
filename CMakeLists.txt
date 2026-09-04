@@ -15,6 +15,8 @@ add_executable(serverApp
   src/core/epoll.cpp
   src/proto/frame.cpp
   src/proto/parser.cpp
+  src/audio/source.cpp
+  src/core/timer.cpp
 )
 add_executable(clientApp 
   src/client/main.cpp

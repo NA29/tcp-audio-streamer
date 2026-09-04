@@ -21,7 +21,7 @@ fast = socket.create_connection(("127.0.0.1", 12345))
 fast.settimeout(2.0)
 
 latencies = []
-for i in range(5):
+for i in range(30):
     t0 = time.perf_counter()
     fast.sendall(frame(PING))
     hdr = b""
@@ -32,14 +32,14 @@ for i in range(5):
     assert ftype == PONG, f"expected PONG, got {ftype}"
     time.sleep(0.1)
 
-time.sleep(0.6)
+time.sleep(0.5)
 srv.terminate()
 log = srv.stdout.read()
 print(log[-1500:])
 
 worst = max(latencies)
 slow_dropped = "slow consumer" in log
-fast_ok = len(latencies) == 5 and worst < 250
+fast_ok = len(latencies) == 30 and worst < 250
 print("---- result ----")
 print(f"fast-client ping latencies (ms): {[round(x,2) for x in latencies]}")
 print(f"worst: {worst:.2f}ms   slow consumer dropped: {slow_dropped}")

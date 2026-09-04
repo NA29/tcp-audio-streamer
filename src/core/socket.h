@@ -40,6 +40,9 @@ public:
   // parking the thread. This is the single call that makes an event loop possible.
   Status set_nonblocking();
 
+  // Bounds the kernel's own outbound buffer for this socket.
+  Status set_send_buffer(int bytes);
+
   // Accepts one pending connection. On a non-blocking listener, "nothing left to accept"
   // comes back as ErrorCode::WouldBlock -- that is the normal loop terminator, not a failure.
   Result<Socket> accept_one();

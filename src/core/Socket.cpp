@@ -61,6 +61,20 @@ Status Socket::set_nonblocking() {
   return Unit{};
 }
 
+Status Socket::set_send_buffer(int bytes) {
+  // Linux autotunes SO_SNDBUF up to a couple of MB. For a live stream that is
+  // actively harmful: it silently queues seconds of stale audio inside the kernel,
+  // where we cannot see it, cannot age it out, and cannot apply our own policy.
+  // Capping it keeps the queue in OUR buffer, where send() reports EAGAIN promptly
+  // and the slow-consumer rule can act on real numbers.
+  // (Note: the kernel stores double what you ask for -- it reserves half for
+  // bookkeeping -- so getsockopt reports 2x this value.)
+  if (::setsockopt(fd_, SOL_SOCKET, SO_SNDBUF, &bytes, sizeof(bytes)) == -1) {
+    return Error{ErrorCode::SocketOptionFailed, std::strerror(errno)};
+  }
+  return Unit{};
+}
+
 Result<Socket> Socket::accept_one() {
   int client_fd = ::accept(fd_, nullptr, nullptr);
 
