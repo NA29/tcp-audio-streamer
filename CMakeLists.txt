@@ -12,6 +12,7 @@ add_executable(serverApp
   src/server/main.cpp
   src/server/server.cpp
   src/core/socket.cpp
+  src/core/epoll.cpp
 )
 add_executable(clientApp 
   src/client/main.cpp

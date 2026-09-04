@@ -14,10 +14,20 @@ enum class ErrorCode {
   SocketBindFailed,
   SocketListenFailed,
   SocketAcceptFailed,
+  SocketOptionFailed,
+  FcntlFailed,
+
+  // epoll errors
+  EpollCreateFailed,
+  EpollCtlFailed,
+  EpollWaitFailed,
 
   // I/O errors
   SendFailed,
   RecvFailed,
+
+  // not an error: the non-blocking "nothing available right now" signal (EAGAIN)
+  WouldBlock,
 
   // fallback
   Unknown

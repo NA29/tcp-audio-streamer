@@ -59,3 +59,10 @@ public:
 
   explicit operator bool() const { return ok_; } // allows '!'
 };
+
+// Result<T> needs a T. For operations that either succeed with no value or fail with an
+// Error, we use this empty tag type: Status == Result<Unit>.
+//   return Unit{};                      // success
+//   return Error{Code::X, "..."};       // failure
+struct Unit {};
+using Status = Result<Unit>;

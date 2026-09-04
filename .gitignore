@@ -1,4 +1,4 @@
-build/
 .cache/
-PROJECT_PLAN.md
 .DS_STORE
+build/
+PROJECT_PLAN.md
