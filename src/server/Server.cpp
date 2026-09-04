@@ -93,13 +93,20 @@ void Server::accept_new_clients(Socket &listener, Epoll &epoll) {
       continue;
     }
 
-    clients_.emplace(fd, std::move(client)); // map takes ownership of the socket
+    clients_.emplace(fd, ClientSession{std::move(client), {}}); // map owns the socket
     LOG_INFO("client connected (fd=%d, total=%zu)", fd, clients_.size());
   }
 }
 
 void Server::on_readable(int fd, Epoll &epoll) {
-  char buffer[kRecvBufferSize];
+  auto it = clients_.find(fd);
+  if (it == clients_.end()) {
+    return; // already dropped earlier in this same batch of events
+  }
+  ClientSession &session = it->second;
+
+  uint8_t buffer[kRecvBufferSize];
+  std::vector<proto::Frame> frames;
 
   // Drain what is available. Level-triggered epoll would re-notify us if we stopped
   // early, but draining now saves a trip through epoll_wait.
@@ -107,7 +114,19 @@ void Server::on_readable(int fd, Epoll &epoll) {
     ssize_t n = ::recv(fd, buffer, sizeof(buffer), 0);
 
     if (n > 0) {
-      LOG_INFO("fd=%d received %zd bytes", fd, n);
+      // Hand the raw bytes to this client's parser. It emits only whole frames;
+      // anything partial stays buffered inside it until the rest arrives.
+      auto parsed = session.parser.feed(buffer, static_cast<size_t>(n), frames);
+      if (!parsed) {
+        // Unrecoverable framing corruption -- we no longer know where messages
+        // begin, so the only safe action is to close the connection.
+        drop_client(fd, epoll, parsed.error().message.c_str());
+        return;
+      }
+      for (const auto &frame : frames) {
+        on_frame(fd, frame);
+      }
+      frames.clear();
       continue; // there may be more queued
     }
 
@@ -127,6 +146,11 @@ void Server::on_readable(int fd, Epoll &epoll) {
     drop_client(fd, epoll, std::strerror(errno));
     return;
   }
+}
+
+void Server::on_frame(int fd, const proto::Frame &frame) {
+  LOG_INFO("fd=%d frame type=%u payload=%u bytes", fd,
+           static_cast<unsigned>(frame.header.type), frame.header.length);
 }
 
 void Server::drop_client(int fd, Epoll &epoll, const char *why) {

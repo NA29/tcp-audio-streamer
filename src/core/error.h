@@ -22,6 +22,11 @@ enum class ErrorCode {
   EpollCtlFailed,
   EpollWaitFailed,
 
+  // Protocol errors
+  ProtocolBadMagic,     // stream position is untrustworthy -> unrecoverable
+  ProtocolFrameTooLarge,// declared length exceeds our cap -> unrecoverable
+  ProtocolUnknownType,  // recoverable: we know the length, so we can skip it cleanly
+
   // I/O errors
   SendFailed,
   RecvFailed,

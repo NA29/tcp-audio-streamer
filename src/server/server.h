@@ -1,9 +1,18 @@
 #pragma once
 #include "core/epoll.h"
 #include "core/socket.h"
+#include "proto/parser.h"
 
 #include <cstdint>
 #include <unordered_map>
+
+// Everything we remember about one connected client. In the blocking version this
+// state lived implicitly on handle_client()'s stack; with an event loop the stack
+// unwinds after every read, so it has to live here.
+struct ClientSession {
+  Socket socket;
+  proto::FrameParser parser; // where we are mid-message
+};
 
 class Server {
 public:
@@ -24,7 +33,10 @@ private:
 
   void drop_client(int fd, Epoll &epoll, const char *why);
 
+  // Handle one fully-parsed application message.
+  void on_frame(int fd, const proto::Frame &frame);
+
   // Per-client state now lives here instead of on a blocked call stack.
   // The map owns the Socket, so erasing an entry closes the fd (RAII).
-  std::unordered_map<int, Socket> clients_;
+  std::unordered_map<int, ClientSession> clients_;
 };

@@ -2,6 +2,8 @@
 
 #include "error.h"
 #include <cassert>
+#include <new>          // placement new
+#include <type_traits>
 #include <utility>
 
 template <typename T> class Result {
@@ -35,9 +37,36 @@ public:
   // special member copy/copy assignment constructors
   Result(const Result &) = delete;
   Result &operator=(const Result &) = delete;
-  // special member move/move assignment constructors
-  Result(Result &&) = delete;
-  Result &operator=(Result &&) = delete;
+  // Move construction: a union has no idea which member is alive, so WE must
+  // construct the correct one by hand, into raw storage, with placement new.
+  Result(Result &&other) noexcept(std::is_nothrow_move_constructible_v<T>)
+      : ok_(other.ok_) {
+    if (ok_) {
+      new (&value_) T(std::move(other.value_));
+    } else {
+      new (&error_) Error(std::move(other.error_));
+    }
+  }
+
+  // Move assignment: destroy whichever member we currently hold, THEN construct the
+  // incoming one. Getting this order wrong leaks (skip the destructor) or corrupts
+  // (construct over a live object).
+  Result &operator=(Result &&other) noexcept(std::is_nothrow_move_constructible_v<T>) {
+    if (this != &other) {
+      if (ok_) {
+        value_.~T();
+      } else {
+        error_.~Error();
+      }
+      ok_ = other.ok_;
+      if (ok_) {
+        new (&value_) T(std::move(other.value_));
+      } else {
+        new (&error_) Error(std::move(other.error_));
+      }
+    }
+    return *this;
+  }
 
   // accessors
   T &value() { // non-const so we can modify value of non-const Result

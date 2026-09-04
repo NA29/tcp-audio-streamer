@@ -13,11 +13,20 @@ add_executable(serverApp
   src/server/server.cpp
   src/core/socket.cpp
   src/core/epoll.cpp
+  src/proto/frame.cpp
+  src/proto/parser.cpp
 )
 add_executable(clientApp 
   src/client/main.cpp
   src/core/socket.cpp
 )
+
+add_executable(parserTest
+  src/proto/parser_test.cpp
+  src/proto/parser.cpp
+  src/proto/frame.cpp
+)
+target_include_directories(parserTest PRIVATE src)
 
 target_include_directories(serverApp PRIVATE src)
 target_include_directories(clientApp PRIVATE src)
